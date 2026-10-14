@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mapa de IAs para comunicação</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#151232;--paper:#FBFAFF;--line:#DAD5F2;--c:#151232;--on:#fff}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);background:var(--paper) radial-gradient(circle at 1px 1px,#CEC8EE 1.2px,transparent 0) 0 0/24px 24px;font:400 1rem/1.6 "Instrument Sans",system-ui,sans-serif}
+h1,h2,h3,.no,.selo{font-family:"Bricolage Grotesque",system-ui,sans-serif}
+header,main,footer{max-width:1120px;margin:0 auto;padding:0 20px}
+header{padding-top:44px}
+.selo{display:inline-block;background:#FF6FA9;color:var(--ink);border:2px solid var(--ink);border-radius:99px;padding:3px 14px;font-weight:700;font-size:.85rem;transform:rotate(-2deg);margin-bottom:16px}
+h1{font-size:clamp(2.5rem,7.5vw,5.2rem);line-height:.96;font-weight:800;letter-spacing:-.025em;margin:0 0 16px;max-width:11ch}
+.sub{max-width:58ch;margin:0 0 6px;font-size:1.08rem}
+.cont{margin:0 0 24px;font-weight:600}
+.ferr{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.ferr p{width:100%;margin:0 0 2px;font-weight:600}
+.chip{border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:99px;padding:6px 14px;font:inherit;cursor:pointer;transition:background .15s,transform .15s}
+.chip:hover{background:#FFD84D;transform:translateY(-1px)}
+.busca{margin:18px 0 30px}
+.busca label{display:block;font-weight:600;margin-bottom:6px}
+.busca input{width:100%;max-width:360px;padding:9px 14px;border:2px solid var(--ink);border-radius:99px;font:inherit;background:#fff;color:var(--ink)}
+.layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:36px;align-items:start;padding-bottom:8px}
+.terr{background:var(--c);color:var(--on);border:2.5px solid var(--ink);border-radius:34px 34px 34px 10px;padding:18px 20px 22px;margin-bottom:22px;box-shadow:6px 6px 0 var(--ink)}
+.terr:nth-child(2){border-radius:10px 34px 34px 34px}
+.terr:nth-child(3){border-radius:34px 10px 34px 34px}
+.terr:nth-child(4){border-radius:34px 34px 10px 34px}
+.terr h2{font-size:1.45rem;line-height:1.1;margin:0 0 12px;letter-spacing:-.01em}
+.nos{display:flex;flex-wrap:wrap;gap:8px}
+.no{display:inline-flex;align-items:center;gap:8px;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:99px;padding:7px 14px 7px 11px;font-weight:700;font-size:.93rem;line-height:1.15;text-align:left;cursor:pointer;transition:transform .15s}
+.no::before{content:"";flex:none;width:9px;height:9px;border-radius:50%;background:var(--ink)}
+.no:hover{transform:translateY(-2px)}
+.no[aria-pressed=true]{background:var(--ink);color:#fff}
+.no[aria-pressed=true]::before{background:var(--c)}
+.no.dim{opacity:.28}
+:focus-visible{outline:3px solid #FFD84D;outline-offset:2px;box-shadow:0 0 0 5px var(--ink)}
+.painel{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;background:#fff;border:2.5px solid var(--ink);border-radius:28px;padding:26px;min-height:340px;box-shadow:9px 9px 0 var(--c)}
+.painel h2{font-size:2rem;margin:10px 0 4px;line-height:1.05;letter-spacing:-.01em}
+.painel h3{font-size:1.05rem;margin:24px 0 8px}
+.terrnome{display:inline-block;background:var(--c);color:var(--on);border:2px solid var(--ink);border-radius:99px;padding:2px 12px;font-weight:700;font-size:.82rem}
+.vazio{color:#4A4770;margin:0}
+.ia{border:2px solid var(--ink);border-left:10px solid var(--c);border-radius:14px;padding:12px 14px;margin-bottom:10px;background:var(--paper)}
+.ia strong{display:block;font:700 1.1rem "Bricolage Grotesque",system-ui,sans-serif;margin-bottom:4px}
+.ia p{margin:0 0 6px;font-size:.93rem}
+.ia p:last-child{margin:0}
+.dica{background:#FFF3C4;border:2px dashed var(--ink);border-radius:14px;padding:12px 14px;margin:0}
+footer{padding-top:28px;padding-bottom:44px;font-size:.88rem;color:#4A4770;max-width:78ch}
+@media(max-width:780px){
+ .layout{grid-template-columns:1fr}
+ .painel{position:static;max-height:none}
+}
+@media(prefers-reduced-motion:no-preference){
+ .terr{animation:monta .5s cubic-bezier(.2,.9,.3,1.2) both;animation-delay:calc(var(--i) * 110ms)}
+ @keyframes monta{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+ .painel.troca{animation:troca .22s ease-out}
+ @keyframes troca{from{opacity:.5}to{opacity:1}}
+}
+</style>
+</head>
+<body>
+<header>
+  <span class="selo">atualizado em outubro de 2026</span>
+  <h1>Qual IA usar para cada tarefa?</h1>
+  <p class="sub">Um mapa das tarefas da comunicação com as IAs que costumam funcionar melhor em cada uma: o que fazem bem e onde ter cuidado.</p>
+  <p class="cont" id="cont"></p>
+  <div class="ferr" id="ferr"><p>O que você precisa fazer hoje?</p></div>
+  <div class="busca"><label for="busca">Já conhece uma IA? Veja em quais tarefas ela aparece</label><input id="busca" type="search" placeholder="Ex.: Canva, Perplexity, ElevenLabs"></div>
+</header>
+<main class="layout">
+  <div id="mapa" role="group" aria-label="Tarefas da comunicação"></div>
+  <section class="painel" id="painel" aria-live="polite">
+    <p class="vazio">Escolha uma tarefa no mapa para ver quais IAs usar.</p>
+  </section>
+</main>
+<footer>
+  Pesquisa feita em outubro de 2026 a partir de comparativos recentes, e muitos deles são publicados por fornecedores das próprias ferramentas. As IAs mudam rápido: confira recursos, preços e termos de uso nos sites oficiais. A IA acelera o rascunho, mas a revisão é sua: confira fatos, nomes e números e não envie dados sensíveis ou confidenciais a ferramentas externas.
+</footer>
+<script src="dados.js"></script>
+<script>
+const mapa = document.getElementById('mapa');
+const painel = document.getElementById('painel');
+const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const territorioDe = id => TERRITORIOS.find(t => t.categorias.includes(id));
+
+document.getElementById('cont').textContent =
+  `${CATEGORIAS.length} tarefas e ${CATEGORIAS.reduce((n, c) => n + c.ias.length, 0)} IAs mapeadas`;
+
+TERRITORIOS.forEach((t, i) => {
+  const s = document.createElement('section');
+  s.className = 'terr';
+  s.style.setProperty('--c', t.cor);
+  s.style.setProperty('--on', t.texto || '#fff');
+  s.style.setProperty('--i', i);
+  s.innerHTML = `<h2>${esc(t.nome)}</h2><div class="nos"></div>`;
+  t.categorias.forEach(id => {
+    const c = CATEGORIAS.find(x => x.id === id);
+    const b = document.createElement('button');
+    b.className = 'no'; b.dataset.id = id; b.textContent = c.nome;
+    b.setAttribute('aria-pressed', 'false');
+    b.onclick = () => abrir(id);
+    s.querySelector('.nos').appendChild(b);
+  });
+  mapa.appendChild(s);
+});
+
+TAREFAS.forEach(t => {
+  const c = document.createElement('button');
+  c.className = 'chip'; c.textContent = t.texto;
+  c.onclick = () => abrir(t.categoria, true);
+  document.getElementById('ferr').appendChild(c);
+});
+
+document.getElementById('busca').addEventListener('input', e => {
+  const q = e.target.value.trim().toLowerCase();
+  document.querySelectorAll('.no').forEach(n => {
+    const c = CATEGORIAS.find(x => x.id === n.dataset.id);
+    n.classList.toggle('dim', !!q && !c.ias.some(i => i.nome.toLowerCase().includes(q)));
+  });
+});
+
+function abrir(id, rolar) {
+  const a = CATEGORIAS.find(x => x.id === id);
+  const t = territorioDe(id);
+  document.querySelectorAll('.no').forEach(n => n.setAttribute('aria-pressed', n.dataset.id === id));
+  painel.style.setProperty('--c', t.cor);
+  painel.style.setProperty('--on', t.texto || '#fff');
+  painel.innerHTML = `
+    <span class="terrnome">${esc(t.nome)}</span>
+    <h2>${esc(a.nome)}</h2><p>${esc(a.resumo)}</p>
+    <h3>IAs para essa tarefa</h3>
+    ${a.ias.map(i => `<div class="ia"><strong>${esc(i.nome)}</strong><p>${esc(i.forte)}</p><p><b>Atenção:</b> ${esc(i.atencao)}</p></div>`).join('')}
+    <h3>Dica</h3><p class="dica">${esc(a.dica)}</p>`;
+  painel.classList.remove('troca'); void painel.offsetWidth; painel.classList.add('troca');
+  if (rolar && window.innerWidth <= 780) painel.scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
