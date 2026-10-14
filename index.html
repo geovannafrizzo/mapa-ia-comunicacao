@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mapa de IA para comunicação</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Public+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#12203A;--paper:#F2F5F9;--cobalt:#2D4BEB;--mint:#BFE8D4;--sun:#FFC845;--line:#C5CEDC}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 1rem/1.6 "Public Sans",system-ui,sans-serif}
+h1,h2,h3,.no,.hub{font-family:"Bricolage Grotesque",system-ui,sans-serif}
+header,main,footer{max-width:1080px;margin:0 auto;padding:0 20px}
+header{padding-top:40px}
+h1{font-size:clamp(2rem,5vw,3.4rem);line-height:1.05;font-weight:800;margin:0 0 12px;max-width:16ch}
+.sub{max-width:56ch;margin:0 0 28px}
+.tarefas{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:32px}
+.tarefas p{width:100%;margin:0;font-weight:600}
+.chip{border:1.5px solid var(--ink);background:transparent;color:var(--ink);border-radius:99px;padding:6px 14px;font:inherit;cursor:pointer}
+.chip:hover{background:var(--mint)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:start}
+.mapa{position:relative;aspect-ratio:1;max-width:520px;width:100%}
+.mapa svg{position:absolute;inset:0;width:100%;height:100%}
+.mapa line{stroke:var(--line);stroke-width:.5}
+.mapa line.on{stroke:var(--cobalt);stroke-width:1}
+.hub{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:26%;aspect-ratio:1;border-radius:50%;background:var(--ink);color:var(--paper);display:grid;place-items:center;text-align:center;font-weight:700;font-size:.95rem;line-height:1.15;box-shadow:0 0 0 6px var(--sun)}
+.no{position:absolute;transform:translate(-50%,-50%);width:27%;min-height:64px;padding:8px;border:2px solid var(--ink);border-radius:14px;background:#fff;color:var(--ink);font-weight:700;font-size:.92rem;line-height:1.2;cursor:pointer}
+.no:hover{background:var(--mint)}
+.no[aria-pressed=true]{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
+:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.painel{background:#fff;border:2px solid var(--ink);border-radius:16px;padding:24px;min-height:320px}
+.painel h2{font-size:1.7rem;margin:0 0 4px;line-height:1.1}
+.painel h3{font-size:1.05rem;margin:22px 0 6px}
+.painel ul{margin:0;padding-left:1.2em}
+.vazio{color:#4A5875}
+.prompt{border:1.5px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--paper)}
+.prompt strong{display:block;margin-bottom:4px}
+.prompt p{margin:0 0 8px;font-size:.92rem}
+.copiar{border:0;background:var(--ink);color:#fff;border-radius:8px;padding:6px 12px;font:inherit;font-size:.88rem;cursor:pointer}
+.copiar:hover{background:var(--cobalt)}
+footer{padding-top:32px;padding-bottom:40px;font-size:.88rem;color:#4A5875;max-width:70ch}
+@media(max-width:760px){
+ .layout{grid-template-columns:1fr}
+ .mapa{aspect-ratio:auto;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+ .mapa svg,.hub{display:none}
+ .no{position:static;transform:none;width:auto}
+}
+@media(prefers-reduced-motion:no-preference){.painel{animation:entra .25s ease-out}@keyframes entra{from{opacity:.4}to{opacity:1}}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Onde a IA ajuda na comunicação?</h1>
+  <p class="sub">Um mapa das áreas da comunicação com usos, ferramentas e prompts prontos para copiar. Clique numa área ou escolha sua tarefa.</p>
+  <div class="tarefas" id="tarefas"><p>O que você precisa fazer hoje?</p></div>
+</header>
+<main class="layout">
+  <div class="mapa" id="mapa" role="group" aria-label="Áreas da comunicação">
+    <svg viewBox="0 0 100 100" aria-hidden="true" id="linhas"></svg>
+    <div class="hub">Comunicação<br>+ IA</div>
+  </div>
+  <section class="painel" id="painel" aria-live="polite">
+    <p class="vazio">Escolha uma área no mapa para ver como a IA entra no trabalho dela.</p>
+  </section>
+</main>
+<footer>
+  A IA acelera o rascunho, mas a revisão é sua: confira fatos, nomes e números e não cole dados sensíveis ou confidenciais em ferramentas externas.
+</footer>
+<script src="dados.js"></script>
+<script>
+const mapa = document.getElementById('mapa');
+const painel = document.getElementById('painel');
+const linhas = document.getElementById('linhas');
+const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+AREAS.forEach((a, i) => {
+  const ang = (-90 + i * 360 / AREAS.length) * Math.PI / 180;
+  const x = 50 + 38 * Math.cos(ang), y = 50 + 38 * Math.sin(ang);
+  const b = document.createElement('button');
+  b.className = 'no'; b.dataset.id = a.id; b.textContent = a.nome;
+  b.style.left = x + '%'; b.style.top = y + '%';
+  b.setAttribute('aria-pressed', 'false');
+  b.onclick = () => abrir(a.id);
+  mapa.appendChild(b);
+  linhas.insertAdjacentHTML('beforeend', `<line data-id="${a.id}" x1="50" y1="50" x2="${x}" y2="${y}"/>`);
+});
+
+TAREFAS.forEach(t => {
+  const c = document.createElement('button');
+  c.className = 'chip'; c.textContent = t.texto;
+  c.onclick = () => abrir(t.area, true);
+  document.getElementById('tarefas').appendChild(c);
+});
+
+function abrir(id, rolar) {
+  const a = AREAS.find(x => x.id === id);
+  document.querySelectorAll('.no').forEach(n => n.setAttribute('aria-pressed', n.dataset.id === id));
+  document.querySelectorAll('#linhas line').forEach(l => l.classList.toggle('on', l.dataset.id === id));
+  painel.innerHTML = `
+    <h2>${esc(a.nome)}</h2><p>${esc(a.resumo)}</p>
+    <h3>Onde a IA ajuda</h3><ul>${a.usos.map(u => `<li>${esc(u)}</li>`).join('')}</ul>
+    <h3>Ferramentas</h3><ul>${a.ferramentas.map(f => `<li>${esc(f)}</li>`).join('')}</ul>
+    <h3>Prompts para copiar</h3>
+    ${a.prompts.map((p, i) => `<div class="prompt"><strong>${esc(p.titulo)}</strong><p>${esc(p.texto)}</p><button class="copiar" data-i="${i}">Copiar prompt</button></div>`).join('')}`;
+  painel.querySelectorAll('.copiar').forEach(btn => btn.onclick = async () => {
+    try { await navigator.clipboard.writeText(a.prompts[btn.dataset.i].texto); btn.textContent = 'Copiado'; }
+    catch (e) { btn.textContent = 'Selecione e copie o texto acima'; }
+    setTimeout(() => btn.textContent = 'Copiar prompt', 1800);
+  });
+  if (rolar && window.innerWidth <= 760) painel.scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
